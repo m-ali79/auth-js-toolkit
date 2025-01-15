@@ -13,6 +13,22 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  // so something when somethign happens
+  events: {
+    async linkAccount({ user }) {
+      await db.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() },
+      });
+    },
+  },
+
+  // show custom pages when something goes wrong or for login
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
+
   callbacks: {
     async jwt({ token }) {
       if (!token.sub) return token;
