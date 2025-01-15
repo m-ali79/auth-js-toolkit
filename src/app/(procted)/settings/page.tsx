@@ -10,10 +10,11 @@ export default async function Page() {
           "use server";
           await signOut();
         }}
-      ></form>
-      <Button size={"lg"} type="submit">
-        Signout
-      </Button>
+      >
+        <Button size={"lg"} type="submit">
+          Signout
+        </Button>
+      </form>
     </div>
   );
 }
