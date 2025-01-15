@@ -30,6 +30,23 @@ export const {
   },
 
   callbacks: {
+    async signIn({ user, account }) {
+      // Allow OAuth without email verification
+      if (account?.provider !== "credentials") return true;
+
+      let existingUser;
+      if (user?.id) {
+        existingUser = await getUserById(user.id);
+      } else {
+        throw new Error("User ID is undefined");
+      }
+
+      // Prevent sign in without email verification
+      if (!existingUser?.emailVerified) return false;
+
+      return true;
+    },
+
     async jwt({ token }) {
       if (!token.sub) return token;
 
