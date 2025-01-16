@@ -72,6 +72,8 @@ model TwoFactorToken {
   @@unique([email, token])
 }
 
+// model will be created when the user enter and 2fa code
+// and also delete immediately
 model TwoFactorConfirmation {
   id String @id @default(cuid())
 
