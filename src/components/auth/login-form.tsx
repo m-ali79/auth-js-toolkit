@@ -48,6 +48,7 @@ export const LoginForm = () => {
     setError("");
     setSuccess("");
 
+    // run state updates in the backgroud without blocking the new state updates
     startTransition(() => {
       login(values)
         .then((data) => {

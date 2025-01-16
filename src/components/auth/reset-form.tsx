@@ -41,6 +41,7 @@ export const ResetForm = () => {
       reset(values).then((data) => {
         setError(data?.error);
         setSuccess(data?.success);
+        form.reset();
       });
     });
   };

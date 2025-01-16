@@ -27,7 +27,6 @@ export const newVerification = async (token: string) => {
     where: { id: existingUser.id },
     data: {
       emailVerified: new Date(),
-      email: existingToken.email,
     },
   });
 

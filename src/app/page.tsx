@@ -23,6 +23,7 @@ export default function Home() {
         </h1>
         <p className="text-white text-lg">A simple authentication service</p>
         <div>
+          {/* just writing the asChild without any value will give this the value of true */}
           <LoginButton asChild>
             <Button variant="secondary" size="lg">
               Sign in

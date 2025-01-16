@@ -12,7 +12,6 @@ import {
   generateVerificationToken,
 } from "@/lib/tokens";
 import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/lib/mail";
-import { getVerificationTokenByEmail } from "@/data/verificiation-token";
 import { getTwoFactorTokenByEmail } from "@/data/two-factor-token";
 import { db } from "@/lib/db";
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
@@ -33,13 +32,16 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   }
 
   if (!existingUser.emailVerified) {
-    const generateVerificationToken = await getVerificationTokenByEmail(email);
-    await sendVerificationEmail(
-      generateVerificationToken!.email,
-      generateVerificationToken!.token
+    const verificationToken = await generateVerificationToken(
+      existingUser.email
     );
 
-    return { success: "confirmation email sent!" };
+    await sendVerificationEmail(
+      verificationToken.email,
+      verificationToken.token
+    );
+
+    return { success: "Confirmation email sent!" };
   }
 
   if (existingUser.isTwoFactorEnabled && existingUser.email) {

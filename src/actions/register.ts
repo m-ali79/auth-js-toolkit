@@ -6,8 +6,8 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { RegisterSchema } from "@/schemas";
 import { getUserByEmail } from "@/data/user";
-import { getVerificationTokenByEmail } from "@/data/verificiation-token";
 import { sendVerificationEmail } from "@/lib/mail";
+import { generateVerificationToken } from "@/lib/tokens";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
@@ -17,19 +17,15 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   }
 
   const { email, password, name } = validatedFields.data;
-  const hashedPassword = await bcrypt.hash(password, 10);
 
   const existingUser = await getUserByEmail(email);
-  console.log("Existing user", existingUser);
 
   if (existingUser) {
     return { error: "Email already in use!" };
   }
 
-  console.log("before query");
-  console.log("Data to insert:", { name, email, password: hashedPassword });
-
-  const user = await db.user.create({
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await db.user.create({
     data: {
       name,
       email,
@@ -37,13 +33,8 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     },
   });
 
-  console.log("user", user);
-
-  const generateVerificationToken = await getVerificationTokenByEmail(email);
-  await sendVerificationEmail(
-    generateVerificationToken!.email,
-    generateVerificationToken!.token
-  );
+  const verificationToken = await generateVerificationToken(email);
+  await sendVerificationEmail(verificationToken.email, verificationToken.token);
 
   return { success: "Confirmation email sent!" };
 };

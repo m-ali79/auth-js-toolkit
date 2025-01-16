@@ -14,7 +14,7 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  // so something when somethign happens
+  // do something when something happens
   events: {
     async linkAccount({ user }) {
       await db.user.update({
