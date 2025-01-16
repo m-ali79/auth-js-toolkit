@@ -7,8 +7,7 @@ const domain = process.env.NEXT_PUBLIC_APP_URL;
 export const sendVerificationEmail = async (email: string, token: string) => {
   const confirmLink = `${domain}/auth/new-verification?token=${token}`;
 
-  console.log(confirmLink);
-  const res = await resend.emails.send({
+  await resend.emails.send({
     from: "auth-toolkit <onboarding@resend.dev>",
     to: email,
     subject: "Confirm your email",
