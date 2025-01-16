@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 
-export const getVerificationTokenbyToken = async (token: string) => {
+export const getVerificationTokenByToken = async (token: string) => {
   try {
     return await db.verificationToken.findUnique({
       where: { token },
