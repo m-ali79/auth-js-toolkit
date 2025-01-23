@@ -54,7 +54,7 @@ export const login = async (
     return { error: "Incorrect password!" };
   }
 
-  if (existingUser && existingUser.email) {
+  if (existingUser.isTwoFactorEnabled && existingUser.email) {
     if (code) {
       const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
 

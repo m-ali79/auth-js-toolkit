@@ -13,11 +13,6 @@ import { sendVerificationEmail } from "@/lib/mail";
 export const settings = async (values: z.infer<typeof SettingsSchema>) => {
   const user = await currentUser();
 
-  console.log({
-    user,
-    values,
-  });
-
   if (!user) {
     return { error: "Unauthorized!" };
   }

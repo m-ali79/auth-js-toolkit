@@ -17,6 +17,7 @@ export const {
 } = NextAuth({
   // do something when something happens
   events: {
+    // run when a user connect their accout with oAuth
     async linkAccount({ user }) {
       await db.user.update({
         where: { id: user.id },
@@ -32,6 +33,7 @@ export const {
   },
 
   callbacks: {
+    // trigger when a user to try to signin
     async signIn({ user, account }) {
       // Allow OAuth without email verification
       if (account?.provider !== "credentials") return true;
@@ -62,30 +64,9 @@ export const {
       return true;
     },
 
-    // async jwt({ token }) {
-    //   if (!token.sub) return token;
-
-    //   const existingUser = await getUserById(token.sub);
-    //   if (!existingUser) return token;
-
-    //   // modifying the token also modifies the session in the session function
-    //   token.role = existingUser.role;
-    //   return token;
-    // },
-
-    // async session({ session, token }) {
-    //   if (token.sub && session.user) {
-    //     session.user.id = token.sub;
-    //   }
-
-    //   if (token.role && session.user) {
-    //     session.user.role = token.role as UserRole;
-    //   }
-
-    //   return session;
-    // },
-
-    async jwt({ token }) {
+    // whenever useSession().update called jwt will execute
+    // jwt update token, by which we update client side sessions
+    async jwt({ token, account, user, profile, session, trigger }) {
       if (!token.sub) return token;
 
       const existingUser = await getUserById(token.sub);
@@ -103,7 +84,7 @@ export const {
       return token;
     },
 
-    async session({ token, session }) {
+    async session({ token, session, newSession, user, trigger }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
