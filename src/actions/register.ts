@@ -18,23 +18,44 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
   const { email, password, name } = validatedFields.data;
 
-  const existingUser = await getUserByEmail(email);
+  try {
+    const existingUser = await getUserByEmail(email);
 
-  if (existingUser) {
-    return { error: "Email already in use!" };
+    if (existingUser) {
+      return { error: "Email already in use!" };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    await db.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+    });
+
+    try {
+      const verificationToken = await generateVerificationToken(email);
+      if (!verificationToken) {
+        return { error: "Failed to generate verification token" };
+      }
+
+      await sendVerificationEmail(
+        verificationToken.email,
+        verificationToken.token
+      );
+
+      return { success: "Confirmation email sent!" };
+    } catch (emailError) {
+      console.error("Email verification error:", emailError);
+
+      return {
+        success:
+          "Account created but email verification failed. please continue by going to /signin route",
+      };
+    }
+  } catch (error) {
+    console.error("Registration error:", error);
+    return { error: "Something went wrong. please try again" };
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  await db.user.create({
-    data: {
-      name,
-      email,
-      password: hashedPassword,
-    },
-  });
-
-  const verificationToken = await generateVerificationToken(email);
-  await sendVerificationEmail(verificationToken.email, verificationToken.token);
-
-  return { success: "Confirmation email sent!" };
 };

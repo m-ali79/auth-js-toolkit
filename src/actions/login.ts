@@ -2,21 +2,25 @@
 
 import * as z from "zod";
 import { AuthError } from "next-auth";
+import bcrypt from "bcryptjs";
 
 import { signIn } from "@/auth";
 import { LoginSchema } from "@/schemas";
 import { getUserByEmail } from "@/data/user";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import {
-  generateTwoFactorToken,
-  generateVerificationToken,
-} from "@/lib/tokens";
-import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/lib/mail";
 import { getTwoFactorTokenByEmail } from "@/data/two-factor-token";
+import { sendVerificationEmail, sendTwoFactorTokenEmail } from "@/lib/mail";
+import {
+  generateVerificationToken,
+  generateTwoFactorToken,
+} from "@/lib/tokens";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { db } from "@/lib/db";
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
 
-export const login = async (values: z.infer<typeof LoginSchema>) => {
+export const login = async (
+  values: z.infer<typeof LoginSchema>,
+  callbackUrl?: string | null
+) => {
   const validatedFields = LoginSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -41,10 +45,16 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
       verificationToken.token
     );
 
-    return { success: "Confirmation email sent!" };
+    return { success: "Confirmation email Sent!" };
   }
 
-  if (existingUser.isTwoFactorEnabled && existingUser.email) {
+  const passwordMatch = await bcrypt.compare(password, existingUser.password);
+
+  if (!passwordMatch) {
+    return { error: "Incorrect password!" };
+  }
+
+  if (existingUser && existingUser.email) {
     if (code) {
       const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
 
@@ -93,8 +103,10 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
+      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
     });
+
+    return { success: "Login Success!" };
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {

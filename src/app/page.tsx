@@ -24,7 +24,8 @@ export default function Home() {
         <p className="text-white text-lg">A simple authentication service</p>
         <div>
           {/* just writing the asChild without any value will give this the value of true */}
-          <LoginButton asChild>
+          {/* use asChild whenver i want to pass control/styles/functionality to the nested child component */}
+          <LoginButton asChild mode="modal">
             <Button variant="secondary" size="lg">
               Sign in
             </Button>

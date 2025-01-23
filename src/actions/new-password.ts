@@ -42,7 +42,7 @@ export const newPassword = async (
     return { error: "Email does not exist!" };
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   await db.user.update({
     where: { id: existingUser.id },

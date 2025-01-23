@@ -20,13 +20,13 @@ export const authRoutes = [
 
 /**
  * The prefix for API authentication routes
- * Routes that start with this prefix are used for API authentication purposes
+ * Routes that start with this prefix are used for API authentication puposes
  * @type {string}
  */
 export const apiAuthPrefix = "/api/auth";
 
 /**
- * The default redirect path after logging in
+ * The default redirect path after loggin in
  * @type {string}
  */
 export const DEFAULT_LOGIN_REDIRECT = "/settings";

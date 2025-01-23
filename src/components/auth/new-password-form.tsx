@@ -43,8 +43,11 @@ export const NewPasswordForm = () => {
 
     startTransition(() => {
       newPassword(values, token).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
+        if (data?.error) setError(data?.error);
+        else {
+          setSuccess(data?.success);
+          form.reset();
+        }
       });
     });
   };

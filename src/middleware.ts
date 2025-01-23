@@ -18,9 +18,7 @@ export default auth((req) => {
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
-  if (isApiAuthRoute) {
-    return null;
-  }
+  if (isApiAuthRoute) return null;
 
   if (isAuthRoute) {
     if (isLoggedIn) {
@@ -41,8 +39,6 @@ export default auth((req) => {
       new URL(`/auth/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)
     );
   }
-
-  return null;
 });
 
 // Optionally, don't invoke Middleware on some paths
