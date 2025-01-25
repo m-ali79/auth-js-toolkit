@@ -4,11 +4,16 @@ import { currentRole } from "@/lib/auth";
 import { UserRole } from "@prisma/client";
 
 export const admin = async () => {
-  const role = await currentRole();
+  try {
+    const role = await currentRole();
 
-  if (role === UserRole.ADMIN) {
-    return { success: "Allowed Server Action!" };
+    if (role === UserRole.ADMIN) {
+      return { success: "Allowed Server Action!" };
+    }
+
+    return { error: "Forbidden Server Action!" };
+  } catch (error) {
+    console.error(error);
+    return { error: "something went wrong" };
   }
-
-  return { error: "Forbidden Server Action!" };
 };

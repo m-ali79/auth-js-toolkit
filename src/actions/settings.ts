@@ -11,65 +11,70 @@ import { generateVerificationToken } from "@/lib/tokens";
 import { sendVerificationEmail } from "@/lib/mail";
 
 export const settings = async (values: z.infer<typeof SettingsSchema>) => {
-  const user = await currentUser();
+  try {
+    const user = await currentUser();
 
-  if (!user) {
-    return { error: "Unauthorized!" };
-  }
-
-  if (!user.id) return { error: "user not found" };
-  const dbUser = await getUserById(user.id);
-
-  if (!dbUser) {
-    return { error: "Unauthorized!" };
-  }
-
-  if (user.isOAuth) {
-    values.email = undefined;
-    values.password = undefined;
-    values.newPassword = undefined;
-    values.isTwoFactorEnabled = undefined;
-  }
-
-  if (values.email && values.email !== user.email) {
-    const existingUser = await getUserByEmail(values.email);
-
-    // when email is in use by another user
-    if (existingUser && existingUser.id !== user.id) {
-      return { error: "Email already in use!" };
+    if (!user) {
+      return { error: "Unauthorized!" };
     }
 
-    const verificationToken = await generateVerificationToken(values.email);
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token
-    );
+    if (!user.id) return { error: "user not found" };
+    const dbUser = await getUserById(user.id);
 
-    return { success: "Verification email sent!" };
-  }
-
-  if (values.password && values.newPassword && dbUser.password) {
-    const passwordsMatch = await bcrypt.compare(
-      values.password,
-      dbUser.password
-    );
-
-    if (!passwordsMatch) {
-      return { error: "Incorrect password!" };
+    if (!dbUser) {
+      return { error: "Unauthorized!" };
     }
 
-    const hashedPassword = await bcrypt.hash(values.newPassword, 12);
+    if (user.isOAuth) {
+      values.email = undefined;
+      values.password = undefined;
+      values.newPassword = undefined;
+      values.isTwoFactorEnabled = undefined;
+    }
 
-    values.password = hashedPassword;
-    values.newPassword = undefined;
+    if (values.email && values.email !== user.email) {
+      const existingUser = await getUserByEmail(values.email);
+
+      // when email is in use by another user
+      if (existingUser && existingUser.id !== user.id) {
+        return { error: "Email already in use!" };
+      }
+
+      const verificationToken = await generateVerificationToken(values.email);
+      await sendVerificationEmail(
+        verificationToken.email,
+        verificationToken.token
+      );
+
+      return { success: "Verification email sent!" };
+    }
+
+    if (values.password && values.newPassword && dbUser.password) {
+      const passwordsMatch = await bcrypt.compare(
+        values.password,
+        dbUser.password
+      );
+
+      if (!passwordsMatch) {
+        return { error: "Incorrect password!" };
+      }
+
+      const hashedPassword = await bcrypt.hash(values.newPassword, 12);
+
+      values.password = hashedPassword;
+      values.newPassword = undefined;
+    }
+
+    await db.user.update({
+      where: { id: dbUser.id },
+      data: {
+        ...values,
+      },
+    });
+
+    return { success: "Settings Updated!" };
+  } catch (error) {
+    console.error(error);
+    return { error: "something went wrong" };
   }
-
-  await db.user.update({
-    where: { id: dbUser.id },
-    data: {
-      ...values,
-    },
-  });
-
-  return { success: "Settings Updated!" };
 };
